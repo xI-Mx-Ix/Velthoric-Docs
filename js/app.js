@@ -22,25 +22,37 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadContent = async (filePath) => {
+
+        content.classList.add('content-fade-out');
+
+        await new Promise(resolve => setTimeout(resolve, 250));
+
         try {
-            content.innerHTML = '<p>Loading content...</p>';
 
             const response = await fetch(filePath);
             if (!response.ok) {
                 throw new Error(`Could not load file: ${filePath}`);
             }
-
             const markdown = await response.text();
 
+            content.classList.remove('content-fade-out');
             content.innerHTML = marked.parse(markdown);
 
             content.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightElement(block);
             });
 
+            content.classList.add('content-fade-in');
+
+            content.addEventListener('animationend', () => {
+                content.classList.remove('content-fade-in');
+            }, { once: true }); 
+
         } catch (error) {
             console.error('Error loading page:', error);
             content.innerHTML = `<p style="color: #ff6b6b;">Error: Could not load content. Please check the console.</p>`;
+
+            content.classList.remove('content-fade-out', 'content-fade-in');
         }
     };
 
