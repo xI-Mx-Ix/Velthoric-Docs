@@ -39,7 +39,7 @@ header {
     background-color: var(--surface-color);
     padding: 1.5rem 2rem;
     border-bottom: 2px solid var(--border-color);
-    text-align: center;
+    text-align: left;
     flex-shrink: 0; 
 }
 
@@ -61,8 +61,7 @@ header h1 {
 #content {
     flex-grow: 1; 
     padding: 2rem 3rem;
-    overflow-y: auto; 
-
+    overflow-y: scroll;
 }
 
 #sidebar ul {
