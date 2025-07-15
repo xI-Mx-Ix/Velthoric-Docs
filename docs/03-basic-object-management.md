@@ -89,3 +89,17 @@ if (foundObject.isPresent()) {
 // Remove an object
 manager.deleteObject(objectToFind);
 ```
+
+---
+
+<br>
+
+> > **A Note on Vector Types: `joltjni.Vec3` vs. `minecraft.Vec3`**
+> >
+> > When working with XBullet in a Minecraft environment, you will frequently encounter two different vector classes with the same name:
+> > *   `com.github.stephengold.joltjni.Vec3`: Used by the Jolt physics engine for positions, velocities, and sizes.
+> > *   `net.minecraft.world.phys.Vec3`: Used by Minecraft for game logic, entity positions, and raycasting.
+> >
+> > These two classes are **not interchangeable**. Accidentally importing or using the wrong `Vec3` will result in compile-time errors, as method signatures will not match.
+> >
+> > Pay close attention to your `import` statements. When in doubt, it's safest to use the fully qualified class name, as shown in the example above (`new com.github.stephengold.joltjni.Vec3(...)`), to avoid ambiguity.
