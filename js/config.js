@@ -20,7 +20,11 @@ const DOC_PAGES = [
     file: 'docs/05-creating-a-custom-soft-body.md',
   },
   {
+    title: 'Working with Constraints',
+    file: 'docs/06-working-with-constraints.md',
+  },
+  {
     title: 'Raycasting Against the World',
-    file: 'docs/06-raycasting-against-the-world.md',
+    file: 'docs/07-raycasting-against-the-world.md',
   },
 ];
