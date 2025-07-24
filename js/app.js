@@ -1,10 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const content = document.getElementById('content');
+    const menuToggle = document.getElementById('menuToggle'); 
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop'); 
+    const body = document.body; 
 
     const createSlug = (title) => title.toLowerCase().replace(/\s+/g, '-');
 
+    function toggleSidebar() {
+        sidebar.classList.toggle('is-open');
+        sidebarBackdrop.classList.toggle('is-open');
+        body.classList.toggle('no-scroll'); 
+    }
+
+    if (menuToggle && sidebar && sidebarBackdrop) {
+        menuToggle.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('is-open')) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && sidebar.classList.contains('is-open')) {
+                sidebar.classList.remove('is-open');
+                sidebarBackdrop.classList.remove('is-open');
+                body.classList.remove('no-scroll');
+            }
+        });
+    }
+
     const createSidebar = () => {
+
+        if (typeof DOC_PAGES === 'undefined' || !Array.isArray(DOC_PAGES)) { 
+             sidebar.innerHTML = '<p style="color: #ff6b6b;">Error: Could not load navigation config.</p>';
+             console.error("DOC_PAGES is not defined or is not an array. Ensure js/config.js is loaded correctly and DOC_PAGES is an array.");
+             return;
+        }
+
         const navList = document.createElement('ul');
         DOC_PAGES.forEach(page => {
             const listItem = document.createElement('li');
@@ -22,16 +59,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadContent = async (filePath) => {
-
         content.classList.add('content-fade-out');
 
-        await new Promise(resolve => setTimeout(resolve, 250));
+        await new Promise(resolve => setTimeout(resolve, 250)); 
 
         try {
-
             const response = await fetch(filePath);
             if (!response.ok) {
-                throw new Error(`Could not load file: ${filePath}`);
+
+                window.location.href = '404.html';
+                return; 
             }
             const markdown = await response.text();
 
@@ -44,19 +81,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             content.classList.add('content-fade-in');
 
-            content.addEventListener('animationend', () => {
+            content.addEventListener('animationend', function handler() {
                 content.classList.remove('content-fade-in');
+                this.removeEventListener('animationend', handler); 
             }, { once: true }); 
 
         } catch (error) {
             console.error('Error loading page:', error);
-            content.innerHTML = `<p style="color: #ff6b6b;">Error: Could not load content. Please check the console.</p>`;
+
+            window.location.href = '404.html'; 
 
             content.classList.remove('content-fade-out', 'content-fade-in');
         }
     };
 
     const handleRouteChange = () => {
+
+        if (typeof DOC_PAGES === 'undefined' || !Array.isArray(DOC_PAGES) || DOC_PAGES.length === 0) {
+            console.error("DOC_PAGES not defined, not an array, or empty. Cannot route.");
+            content.innerHTML = '<p style="color: #ff6b6b;">Error: Navigation data missing or invalid.</p>';
+            return;
+        }
+
         const hash = window.location.hash || `#/${createSlug(DOC_PAGES[0].title)}`;
         const slug = hash.substring(2); 
 
@@ -73,8 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
 
-            loadContent(DOC_PAGES[0].file);
-            document.querySelector('#sidebar a').classList.add('active');
+            window.location.href = '404.html'; 
         }
     };
 
