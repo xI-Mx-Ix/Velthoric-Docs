@@ -4,7 +4,7 @@
 
 Raycasting is the process of sending out an invisible line (a "ray") from a point in a certain direction to see what it hits. It's a fundamental tool for detecting objects, aiming, and creating interactive tools.
 
-XBullet provides a powerful and unified raycasting system through the `PhysicsRaytracing` class. Its key feature is that it can simultaneously check for collisions against both **XBullet physics objects** and **standard Minecraft blocks and entities**, automatically returning the closest object hit.
+Vortex Physics provides a powerful and unified raycasting system through the `VxRaytracing` class. Its key feature is that it can simultaneously check for collisions against both **Vortex physics objects** and **standard Minecraft blocks and entities**, automatically returning the closest object hit.
 
 ## Understanding the Hit Results
 
@@ -15,7 +15,7 @@ When you perform a raycast, the result is wrapped in a few data-holding classes.
 This is the main object you get back from a raycast. It acts as a container that holds either a physics hit or a Minecraft hit, but never both. You must check which type of object was hit before processing the data.
 
 ```java
-Optional<CombinedHitResult> optionalResult = PhysicsRaytracing.rayCast(...);
+Optional<CombinedHitResult> optionalResult = VxRaytracing.rayCast(...);
 
 optionalResult.ifPresent(result -> {
     if (result.isPhysicsHit()) {
@@ -28,7 +28,7 @@ optionalResult.ifPresent(result -> {
 
 ### `PhysicsHitInfo`
 
-If the ray hits an XBullet physics object, you'll get this object. It contains:
+If the ray hits an Vortex Bullet physics object, you'll get this object. It contains:
 *   `getBodyId()`: The unique physics ID of the body that was hit. You can use this to find the `IPhysicsObject`.
 *   `getHitFraction()`: A value from 0.0 to 1.0 representing how far along the ray the hit occurred.
 *   `getHitNormal()`: The surface normal (a vector pointing directly away from the surface) at the point of impact.
@@ -53,7 +53,7 @@ If the ray hits a standard block or entity, you'll get this object. It contains:
 
 ## Performing a Combined Raycast
 
-The easiest and most common way to perform a raycast is by using the static `PhysicsRaytracing.rayCast()` method. It takes the origin, direction, and max distance, and handles everything for you.
+The easiest and most common way to perform a raycast is by using the static `VxRaytracing.rayCast()` method. It takes the origin, direction, and max distance, and handles everything for you.
 
 Here is a complete example of casting a ray and processing the result:
 
@@ -65,7 +65,7 @@ Vec3 rayDirection = new Vec3(player.getLookAngle()); // Make sure this is normal
 float maxDistance = 10.0f; // The maximum length of the ray
 
 // 2. Perform the raycast
-Optional<CombinedHitResult> optionalResult = PhysicsRaytracing.rayCast(level, rayOrigin, rayDirection, maxDistance);
+Optional<CombinedHitResult> optionalResult = VxRaytracing.rayCast(level, rayOrigin, rayDirection, maxDistance);
 
 // 3. Process the result
 optionalResult.ifPresent(result -> {
@@ -98,10 +98,10 @@ If you only need to check for one type of object and want to ignore the other, y
 
 **To raycast against only physics objects:**
 ```java
-Optional<PhysicsHitInfo> physicsHit = PhysicsRaytracing.rayCastPhysics(level, rayOrigin, rayDirection, maxDistance);
+Optional<PhysicsHitInfo> physicsHit = VxRaytracing.rayCastPhysics(level, rayOrigin, rayDirection, maxDistance);
 ```
 
 **To raycast against only vanilla blocks and entities:**
 ```java
-Optional<MinecraftHitInfo> minecraftHit = PhysicsRaytracing.rayCastMinecraft(level, rayOrigin, rayDirection, maxDistance);
+Optional<MinecraftHitInfo> minecraftHit = VxRaytracing.rayCastMinecraft(level, rayOrigin, rayDirection, maxDistance);
 ```

@@ -2,13 +2,13 @@
 
 ## Introduction
 
-XBullet allows you to define completely new types of physics objects. This guide will walk you through the process of creating a custom rigid body, from its physical properties to its in-game appearance. We will use a simple **Box** object as our example.
+Vortex Physics allows you to define completely new types of physics objects. This guide will walk you through the process of creating a custom rigid body, from its physical properties to its in-game appearance. We will use a simple **Box** object as our example.
 
 Creating a new rigid body involves four main components:
 1.  **Properties:** Defines the physical characteristics (mass, friction, etc.).
 2.  **Object Class:** The main logic, defining the collision shape and custom data.
 3.  **Renderer:** A client-side class to draw the object in the world.
-4.  **Registration:** Telling XBullet about your new object type.
+4.  **Registration:** Telling Vortex Physics about your new object type.
 
 ## 1. Defining Physics Properties
 
@@ -33,7 +33,7 @@ This is the core of your object. Create a new class that extends `RigidPhysicsOb
 ```java
 public class BoxRigidPhysicsObject extends RigidPhysicsObject {
     // A unique identifier for your object type.
-    public static final String TYPE_IDENTIFIER = "xbullet:box_obj";
+    public static final String TYPE_IDENTIFIER = "modid:box_obj";
 
     // Custom data for this object type.
     private Vec3 halfExtents;
@@ -116,7 +116,7 @@ public class BoxRenderer extends RigidPhysicsObject.Renderer {
 
 ## 4. Registering Your Object
 
-Finally, you must register your new object and its renderer with the XBullet API. This should be done early in your mod's lifecycle.
+Finally, you must register your new object and its renderer with the Vortex Physics API. This should be done early in your mod's lifecycle.
 
 *   **For Forge:** Use the `FMLCommonSetupEvent` for object registration and `FMLClientSetupEvent` for renderer registration.
 *   **For Fabric:** Use your main mod initializer for object registration and your client mod initializer for renderer registration.
@@ -126,7 +126,7 @@ public class MyModRegistration {
 
     // Call this during common/server setup.
     public static void registerPhysicsObjects() {
-        var api = XBulletAPI.getInstance().objects();
+        var api = VortexAPI.getInstance().objects();
 
         api.registerObjectType(
             BoxRigidPhysicsObject.TYPE_IDENTIFIER,       // The unique ID
@@ -139,7 +139,7 @@ public class MyModRegistration {
     // Call this during client setup.
     @OnlyIn(Dist.CLIENT)
     public static void registerClientRenderers() {
-        var api = XBulletAPI.getInstance().objects();
+        var api = VortexAPI.getInstance().objects();
 
         api.registerRigidRenderer(
             BoxRigidPhysicsObject.TYPE_IDENTIFIER,       // The unique ID

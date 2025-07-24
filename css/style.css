@@ -1,7 +1,7 @@
 :root {
     --bg-color: #1a1a1d;
     --surface-color: #2c2f33;
-    --primary-color: #4a90e2; 
+    --primary-color: #4a90e2;
     --text-color: #f0f0f0;
     --text-muted-color: #a9a9a9;
     --border-color: #444;
@@ -18,34 +18,38 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     line-height: 1.6;
-    display: flex; 
-    height: 100vh; 
+    display: flex;
+    min-height: 100vh; 
     overflow: hidden; 
 }
 
 html {
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) var(--surface-color);
+    font-size: 16px;
 }
 
 .main-view {
     flex-grow: 1;
     display: flex;
-    flex-direction: column; 
-    height: 100vh;
+    flex-direction: column;
+    
+    height: 100vh; 
+    min-width: 0;
 }
 
 header {
     background-color: var(--surface-color);
-    padding: 1.5rem 2rem;
+    padding: 1rem 1.5rem;
     border-bottom: 2px solid var(--border-color);
     text-align: left;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 
 header h1 {
     color: var(--primary-color);
     font-weight: 600;
+    font-size: 1.8rem;
 }
 
 #sidebar {
@@ -53,15 +57,18 @@ header h1 {
     flex-shrink: 0;
     background-color: var(--surface-color);
     padding: 1.5rem;
-    height: 100vh; 
+    height: 100vh;
     overflow-y: auto;
     border-right: 2px solid var(--border-color);
 }
 
 #content {
-    flex-grow: 1; 
+    flex-grow: 1;
     padding: 2rem 3rem;
-    overflow-y: scroll;
+    overflow-y: scroll; 
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 #sidebar ul {
@@ -96,6 +103,10 @@ header h1 {
     padding-bottom: 0.5rem;
 }
 
+#content h1 { font-size: 2.2rem; }
+#content h2 { font-size: 1.8rem; }
+#content h3 { font-size: 1.5rem; }
+
 #content p {
     margin-bottom: 1rem;
 }
@@ -103,6 +114,7 @@ header h1 {
 #content ul, #content ol {
     margin-left: 1.5rem;
     margin-bottom: 1rem;
+    overflow-wrap: break-word;
 }
 
 #content a {
@@ -115,12 +127,13 @@ header h1 {
 }
 
 #content pre {
-    background-color: #23241f; 
+    background-color: #23241f;
     padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 1rem;
-    overflow-x: auto;
+    overflow-x: auto; 
     font-family: "Fira Code", "Courier New", monospace;
+    font-size: 0.9rem;
 }
 
 #content code {
@@ -129,12 +142,91 @@ header h1 {
     padding: 0.2em 0.4em;
     border-radius: 4px;
     font-family: "Fira Code", "Courier New", monospace;
+    
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 #content pre code {
     background-color: transparent;
     color: inherit;
     padding: 0;
+    white-space: pre; 
+    
+    overflow-wrap: normal;
+    word-wrap: normal;
+}
+
+#content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+}
+
+#content table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#content table th,
+#content table td {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+#content table th {
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#content table tr:nth-child(even) {
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+#content blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    background-color: rgba(74, 144, 226, 0.08);
+    color: var(--text-color);
+    border-radius: 6px;
+}
+
+#content blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+#content hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 2rem 0;
+}
+
+#content strong, #content b {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+#content em, #content i {
+    font-style: italic;
+}
+
+#content s, #content del {
+    text-decoration: line-through;
+    color: var(--text-muted-color);
 }
 
 ::-webkit-scrollbar {
@@ -155,6 +247,52 @@ header h1 {
     background-color: var(--text-muted-color);
 }
 
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .main-view {
+        height: auto; 
+    }
+
+    #sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+        padding: 1rem;
+    }
+
+    #sidebar ul li a {
+        padding: 0.5rem 0.75rem;
+    }
+
+    header {
+        padding: 1rem;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    #content {
+        padding: 1.5rem;
+        height: auto; 
+    }
+
+    #content h1 { font-size: 1.8rem; }
+    #content h2 { font-size: 1.5rem; }
+    #content h3 { font-size: 1.3rem; }
+
+    #content pre {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -169,9 +307,11 @@ header h1 {
 @keyframes fadeOut {
   from {
     opacity: 1;
+    transform: translateY(0);
   }
   to {
     opacity: 0;
+    transform: translateY(15px);
   }
 }
 

@@ -10,7 +10,7 @@ The main components are:
 1.  **Properties:** Defines the physical behavior (damping, pressure, etc.).
 2.  **Object Class:** The main logic, where you procedurally build the object's structure.
 3.  **Renderer:** A client-side class to draw the deforming object.
-4.  **Registration:** Making XBullet aware of your new soft body type.
+4.  **Registration:** Making Vortex Physics aware of your new soft body type.
 
 ## 1. Defining Soft Body Properties
 
@@ -35,7 +35,7 @@ For our rope, we will create a series of vertices in a line and connect them wit
 
 ```java
 public class RopeSoftBody extends SoftPhysicsObject {
-    public static final String TYPE_IDENTIFIER = "xbullet:rope";
+    public static final String TYPE_IDENTIFIER = "modid:rope";
 
     // Custom parameters needed to build this specific object
     private float ropeLength;
@@ -139,14 +139,14 @@ public class RopeSoftBodyRenderer extends SoftPhysicsObject.Renderer {
 
 ## 4. Registering Your Soft Body
 
-Finally, register your new soft body and its renderer with the XBullet API. This follows the same pattern as for rigid bodies, but uses a different object type and renderer registration method.
+Finally, register your new soft body and its renderer with the Vortex Physics API. This follows the same pattern as for rigid bodies, but uses a different object type and renderer registration method.
 
 ```java
 public class MyModRegistration {
 
     // Call this during common/server setup (e.g., FMLCommonSetupEvent).
     public static void registerPhysicsObjects() {
-        var api = XBulletAPI.getInstance().objects();
+        var api = VortexAPI.getInstance().objects();
 
         api.registerObjectType(
             RopeSoftBody.TYPE_IDENTIFIER,          // The unique ID
@@ -159,7 +159,7 @@ public class MyModRegistration {
     // Call this during client setup (e.g., FMLClientSetupEvent).
     @OnlyIn(Dist.CLIENT)
     public static void registerClientRenderers() {
-        var api = XBulletAPI.getInstance().objects();
+        var api = VortexAPI.getInstance().objects();
 
         api.registerSoftRenderer(                  // Use the soft renderer method
             RopeSoftBody.TYPE_IDENTIFIER,          // The unique ID

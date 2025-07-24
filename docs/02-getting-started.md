@@ -1,8 +1,8 @@
-# 02 - Getting Started with XBullet
+# 02 - Getting Started with Vortex Physics
 
 ## Setting Up Your Project
 
-To use XBullet in your Minecraft mod, you first need to add it to your project. If you use Gradle as your build system, add this dependency to your build.gradle file:
+To use Vortex Physics in your Minecraft mod, you first need to add it to your project. If you use Gradle as your build system, add this dependency to your build.gradle file:
 
 ```gradle
 dependencies {
@@ -12,7 +12,7 @@ dependencies {
 
 ## The Golden Rule: Managing Native Memory
 
-Before you write a single line of XBullet code, it is critical to understand how memory is handled. XBullet uses the **Jolt Physics Engine** through a JNI bridge. This means that for many objects you create in Java, a corresponding object is created in "native" C++ code, which lives outside the Java Virtual Machine's (JVM) standard garbage collector.
+Before you write a single line of Vortex Physics code, it is critical to understand how memory is handled. Vortex uses the **Jolt Physics Engine** through a JNI bridge. This means that for many objects you create in Java, a corresponding object is created in "native" C++ code, which lives outside the Java Virtual Machine's (JVM) standard garbage collector.
 
 **If you do not manage this native memory correctly, your game will suffer from memory leaks and eventually crash.**
 
@@ -24,9 +24,9 @@ It's important to distinguish between two types of objects:
 
 **The Java garbage collector does NOT automatically free the native memory associated with these objects.** You are responsible for freeing it.
 
-### How to Free Native Memory in XBullet
+### How to Free Native Memory in Vortex Physics
 
-The Jolt JNI library provides several mechanisms for memory management, but to keep things safe and simple, XBullet encourages a single, explicit approach: **The `try-with-resources` statement (or manual `.close()` calls).**
+The Jolt JNI library provides several mechanisms for memory management, but to keep things safe and simple, Vortex Physics encourages a single, explicit approach: **The `try-with-resources` statement (or manual `.close()` calls).**
 
 Most native-backed Jolt JNI objects implement the `AutoCloseable` interface. This means you should almost always create and use them within a `try-with-resources` block. This guarantees that their native memory is freed as soon as the block is exited, preventing leaks.
 
@@ -63,7 +63,7 @@ Some of the most important Jolt objects, like `Shape`, `ShapeSettings`, and `Con
 
 To manage their lifecycle, you use a **reference** to them. The simplest way to get a reference is by calling `.toRef()`. It is this reference object that you must close.
 
-XBullet's `ObjectManager` and `ConstraintManager` handle most of this complexity for you. When you create a `RigidPhysicsObject` or a `Constraint`, the manager takes ownership and ensures it is cleaned up properly when unloaded or removed. You do not need to manually call `close()` on objects returned by `manager.getObject()` or `manager.getConstraint()`.
+Vortex Physics's `VxObjectManager` and `VxConstraintManager` handle most of this complexity for you. When you create a `RigidPhysicsObject` or a `Constraint`, the manager takes ownership and ensures it is cleaned up properly when unloaded or removed. You do not need to manually call `close()` on objects returned by `manager.getObject()` or `manager.getConstraint()`.
 
 However, when you create temporary `ShapeSettings` or other `RefTarget` objects yourself, you are responsible for them.
 
@@ -86,7 +86,7 @@ try (BoxShapeSettings shapeSettings = new BoxShapeSettings(new Vec3(1, 1, 1))) {
 >
 > 1.  Be aware of which objects are native-backed (`JoltPhysicsObject`).
 > 2.  **Always** create and use these temporary objects inside a `try-with-resources` block.
-> 3.  The `ObjectManager` and `ConstraintManager` will handle the memory for the objects they manage. Do not `close()` them yourself.
+> 3.  The `VxObjectManager` and `VxConstraintManager` will handle the memory for the objects they manage. Do not `close()` them yourself.
 
 > For a comprehensive and detailed explanation of these concepts, please refer to the official Jolt JNI documentation on **[Freeing Native Memory](https://stephengold.github.io/jolt-jni-docs/jolt-jni-en/English/free.html)**.
 

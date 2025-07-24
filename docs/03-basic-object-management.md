@@ -2,17 +2,17 @@
 
 ## Introduction
 
-Before creating your own custom physics objects, it's important to understand their lifecycle: how to spawn, find, and remove them from the world. This guide covers the fundamental operations for managing any physics object in XBullet.
+Before creating your own custom physics objects, it's important to understand their lifecycle: how to spawn, find, and remove them from the world. This guide covers the fundamental operations for managing any physics object in Vortex Physics.
 
-## The ObjectManager
+## The VxObjectManager
 
-The `ObjectManager` is your main entry point for interacting with all physics objects within a specific dimension. It handles everything from creating and spawning objects to saving and loading them.
+The `VxObjectManager` is your main entry point for interacting with all physics objects within a specific dimension. It handles everything from creating and spawning objects to saving and loading them.
 
-To get the `ObjectManager` for a specific level, you need a `ServerLevel` instance:
+To get the `VxObjectManager` for a specific level, you need a `ServerLevel` instance:
 
 ```java
 // Assuming 'serverLevel' is an instance of ServerLevel
-ObjectManager manager = PhysicsWorld.getObjectManager(serverLevel.dimension());
+VxObjectManager manager = VxPhysicsWorld.getObjectManager(serverLevel.dimension());
 ```
 
 ## Spawning an Object
@@ -21,12 +21,12 @@ Spawning a physics object is a three-step process: **Create**, **Configure**, an
 
 ### Step 1: Create the Object Instance
 
-First, you create an instance of the object using its unique type identifier. The `ObjectManager` uses a factory system to construct the correct object class.
+First, you create an instance of the object using its unique type identifier. The `VxObjectManager` uses a factory system to construct the correct object class.
 
 ```java
 // Define a unique ID and initial position/rotation for the object.
 UUID objectId = UUID.randomUUID();
-PhysicsTransform transform = new PhysicsTransform(new RVec3(x, y, z), Quat.sIdentity());
+VxTransform transform = new VxTransform(new RVec3(x, y, z), Quat.sIdentity());
 
 // Create the object instance using its registered identifier.
 // We use the identifier for our built-in box object here.
@@ -96,7 +96,7 @@ manager.deleteObject(objectToFind);
 
 > > **A Note on Vector Types: `joltjni.Vec3` vs. `minecraft.Vec3`**
 > >
-> > When working with XBullet in a Minecraft environment, you will frequently encounter two different vector classes with the same name:
+> > When working with Vortex Physics in a Minecraft environment, you will frequently encounter two different vector classes with the same name:
 > > *   `com.github.stephengold.joltjni.Vec3`: Used by the Jolt physics engine for positions, velocities, and sizes.
 > > *   `net.minecraft.world.phys.Vec3`: Used by Minecraft for game logic, entity positions, and raycasting.
 > >

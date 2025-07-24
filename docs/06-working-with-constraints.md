@@ -4,25 +4,25 @@
 
 Constraints are the backbone of any dynamic physics simulation. Think of them as the rules that govern how two physics objects interact. They can be digital glue, hinges, ropes, pistons, or any other type of joint that connects objects and restricts their movement.
 
-With constraints, you can build complex machines, ragdolls, destructible structures, and vehicles. This guide will cover how to create, manage, and configure constraints using the XBullet API.
+With constraints, you can build complex machines, ragdolls, destructible structures, and vehicles. This guide will cover how to create, manage, and configure constraints using the Vortex Physics API.
 
-## The ConstraintManager
+## The VxConstraintManager
 
-Similar to how the `ObjectManager` handles physics objects, the `ConstraintManager` is your central point for managing all constraints within a specific dimension. It handles their creation, persistence, and removal.
+Similar to how the `VxObjectManager` handles physics objects, the `VxConstraintManager` is your central point for managing all constraints within a specific dimension. It handles their creation, persistence, and removal.
 
-To get the `ConstraintManager` for a specific level:
+To get the `VxConstraintManager` for a specific level:
 
 ```java
 // Assuming 'serverLevel' is an instance of ServerLevel
-ConstraintManager constraintManager = PhysicsWorld.getConstraintManager(serverLevel.dimension());
+VxConstraintManager constraintManager = VxPhysicsWorld.getConstraintManager(serverLevel.dimension());
 ```
 
 ## Creating Constraints: The Builder Pattern
 
-Creating a constraint in Jolt can involve many parameters. To make this process clean and readable, XBullet uses a **builder pattern**. Instead of a massive constructor, you chain methods together to configure your constraint step-by-step.
+Creating a constraint in Jolt can involve many parameters. To make this process clean and readable, Vortex Physics uses a **builder pattern**. Instead of a massive constructor, you chain methods together to configure your constraint step-by-step.
 
 The general workflow is always the same:
-1.  **Get a Builder:** Call a `create...()` method on the `ConstraintManager`.
+1.  **Get a Builder:** Call a `create...()` method on the `VxConstraintManager`.
 2.  **Configure:** Use the builder's methods (like `between()`, `atPoints()`, `withLimits()`) to set its properties.
 3.  **Build:** Call `.build()` to finalize the configuration and queue the constraint for creation in the physics world.
 
@@ -40,7 +40,7 @@ Let's create a simple hinge connecting two physics objects (`box1` and `box2`). 
 
 ```java
 // Assume box1 and box2 are IPhysicsObject instances that already exist
-// Assume constraintManager is your ConstraintManager instance
+// Assume constraintManager is your VxConstraintManager instance
 
 // Define where the hinge will be and what axis it rotates around
 RVec3 pivotPointInWorld = new RVec3(10, 64, 20);
@@ -128,7 +128,7 @@ try (MotorSettings powerfulMotor = new MotorSettings()) {
 
 ## Other Common Constraints
 
-XBullet provides builders for all major Jolt constraints. Here are a few more common ones:
+Vortex Physics provides builders for all major Jolt constraints. Here are a few more common ones:
 
 *   **Fixed Constraint:** The "superglue" of constraints. It locks two objects together completely, allowing no relative movement or rotation. Use `createFixed()`.
 *   **Distance Constraint:** Keeps two points on two bodies at a specific distance, or within a min/max range. Perfect for ropes, chains, or rigid links. Use `createDistance().withDistanceRange(min, max)`. Its limits are also controlled by `SpringSettings`.
