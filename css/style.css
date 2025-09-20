@@ -377,9 +377,9 @@ header h1 {
 
     header h1 {
         font-size: 1.5rem;
-
         text-align: center;
         margin: 0;
+        white-space: nowrap;
     }
 
     .menu-toggle {
