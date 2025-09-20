@@ -11,6 +11,10 @@ This is a clean, responsive, and easy-to-use template for creating a static docu
 -   **No Build Step**: Purely static. Just edit the files and deploy.
 -   **Smooth Transitions**: Content fades in and out smoothly when navigating between pages.
 
+## Live Demo
+
+This template was originally developed for the documentation of the main project. You can see a live example in the [Velthoric](https://github.com/xI-Mx-Ix/Velthoric) repository.
+
 ## How to Use
 
 1.  **Configure Versions**:
