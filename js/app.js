@@ -1,14 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('content'); // Das scrollbare Elternelement
-    const contentWrapper = document.querySelector('.content-wrapper'); // Der innere Wrapper für Animationen
+    const content = document.getElementById('content');
+    const contentWrapper = document.querySelector('.content-wrapper');
     const versionSelectorContainer = document.getElementById('version-selector-container');
+    const menuToggle = document.getElementById('menu-toggle');
+    const mainView = document.querySelector('.main-view');
 
     let versionsConfig = {};
     let currentVersion = '';
     let docPages = [];
 
     const createSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const toggleSidebar = () => {
+        document.body.classList.toggle('sidebar-is-open');
+    };
+
+    menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSidebar();
+    });
+
+    mainView.addEventListener('click', () => {
+        if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-is-open')) {
+            toggleSidebar();
+        }
+    });
+
+    sidebar.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A' && window.innerWidth <= 768) {
+            if (document.body.classList.contains('sidebar-is-open')) {
+                toggleSidebar();
+            }
+        }
+    });
 
     const fetchVersions = async () => {
         try {
@@ -116,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const markdown = await response.text();
 
             contentWrapper.classList.remove('content-fade-out');
-            contentWrapper.innerHTML = marked.parse(markdown); // Dies ersetzt den "Loading..." Text
+            contentWrapper.innerHTML = marked.parse(markdown);
             contentWrapper.querySelectorAll('pre code').forEach(hljs.highlightElement);
 
             contentWrapper.classList.add('content-fade-in');

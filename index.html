@@ -9,12 +9,19 @@
     <link rel="icon" type="image/png" href="assets/velthoric.png" />
 </head>
 <body>
+
 <nav id="sidebar">
     <p>Loading navigation...</p>
 </nav>
+
 <div class="main-view">
     <header>
         <div class="header-content">
+            <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <h1>Velthoric API</h1>
             <div id="version-selector-container">
             </div>
@@ -22,14 +29,15 @@
     </header>
 
     <main id="content">
-        <!-- Der Wrapper ist jetzt Teil der Grundstruktur -->
         <div class="content-wrapper">
             <p>Loading content...</p>
         </div>
     </main>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="js/app.js"></script>
+
 </body>
 </html>
