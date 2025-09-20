@@ -1,132 +1,180 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('content');
-    const menuToggle = document.getElementById('menuToggle'); 
-    const sidebarBackdrop = document.getElementById('sidebarBackdrop'); 
-    const body = document.body; 
+    const content = document.getElementById('content'); // Das scrollbare Elternelement
+    const contentWrapper = document.querySelector('.content-wrapper'); // Der innere Wrapper für Animationen
+    const versionSelectorContainer = document.getElementById('version-selector-container');
 
-    const createSlug = (title) => title.toLowerCase().replace(/\s+/g, '-');
+    let versionsConfig = {};
+    let currentVersion = '';
+    let docPages = [];
 
-    function toggleSidebar() {
-        sidebar.classList.toggle('is-open');
-        sidebarBackdrop.classList.toggle('is-open');
-        body.classList.toggle('no-scroll'); 
-    }
+    const createSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-    if (menuToggle && sidebar && sidebarBackdrop) {
-        menuToggle.addEventListener('click', toggleSidebar);
-        sidebarBackdrop.addEventListener('click', toggleSidebar);
+    const fetchVersions = async () => {
+        try {
+            const response = await fetch('versions.json');
+            if (!response.ok) throw new Error('versions.json not found');
+            versionsConfig = await response.json();
+        } catch (error) {
+            console.error('Failed to load versions config:', error);
+            contentWrapper.innerHTML = '<p style="color: #ff6b6b;">Error: Could not load versions configuration.</p>';
+        }
+    };
 
-        sidebar.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 768 && sidebar.classList.contains('is-open')) {
-                    toggleSidebar();
+    const fetchConfig = async (version) => {
+        try {
+            const response = await fetch(`docs/${version}/config.json`);
+            if (!response.ok) throw new Error(`config.json for version ${version} not found`);
+            docPages = await response.json();
+        } catch (error) {
+            console.error(`Failed to load config for version ${version}:`, error);
+            docPages = [];
+            contentWrapper.innerHTML = `<p style="color: #ff6b6b;">Error: Could not load navigation for version ${version}.</p>`;
+        }
+    };
+
+    const createVersionSelector = () => {
+        versionSelectorContainer.innerHTML = '';
+
+        const selected = document.createElement('div');
+        selected.className = 'version-selected';
+        selected.textContent = currentVersion + (currentVersion === versionsConfig.latest ? ' (Latest)' : '');
+
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'version-options';
+
+        versionsConfig.versions.forEach(version => {
+            const option = document.createElement('div');
+            option.className = 'version-option';
+            option.textContent = version + (version === versionsConfig.latest ? ' (Latest)' : '');
+            option.dataset.value = version;
+
+            if (version === currentVersion) {
+                option.classList.add('is-selected');
+            }
+
+            option.addEventListener('click', () => {
+                const newVersion = option.dataset.value;
+                if (newVersion !== currentVersion) {
+                    const currentSlug = window.location.hash.substring(2).split('/')[1] || createSlug(docPages[0]?.title || '');
+                    window.location.hash = `/${newVersion}/${currentSlug}`;
                 }
+                optionsContainer.classList.remove('is-open');
             });
+
+            optionsContainer.appendChild(option);
         });
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768 && sidebar.classList.contains('is-open')) {
-                sidebar.classList.remove('is-open');
-                sidebarBackdrop.classList.remove('is-open');
-                body.classList.remove('no-scroll');
+        versionSelectorContainer.appendChild(selected);
+        versionSelectorContainer.appendChild(optionsContainer);
+
+        selected.addEventListener('click', (e) => {
+            e.stopPropagation();
+            optionsContainer.classList.toggle('is-open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!versionSelectorContainer.contains(e.target)) {
+                optionsContainer.classList.remove('is-open');
             }
         });
-    }
+    };
 
     const createSidebar = () => {
-
-        if (typeof DOC_PAGES === 'undefined' || !Array.isArray(DOC_PAGES)) { 
-             sidebar.innerHTML = '<p style="color: #ff6b6b;">Error: Could not load navigation config.</p>';
-             console.error("DOC_PAGES is not defined or is not an array. Ensure js/config.js is loaded correctly and DOC_PAGES is an array.");
-             return;
+        if (!docPages || docPages.length === 0) {
+            sidebar.innerHTML = '<p style="color: #a9a9a9;">No navigation items found.</p>';
+            return;
         }
 
         const navList = document.createElement('ul');
-        DOC_PAGES.forEach(page => {
+        docPages.forEach(page => {
             const listItem = document.createElement('li');
             const link = document.createElement('a');
+            const slug = createSlug(page.title);
 
-            link.href = `#/${createSlug(page.title)}`;
+            link.href = `#/${currentVersion}/${slug}`;
             link.textContent = page.title;
-            link.dataset.file = page.file; 
+            link.dataset.file = page.file;
+            link.dataset.slug = slug;
 
             listItem.appendChild(link);
             navList.appendChild(listItem);
         });
-        sidebar.innerHTML = ''; 
+        sidebar.innerHTML = '';
         sidebar.appendChild(navList);
     };
 
     const loadContent = async (filePath) => {
-        content.classList.add('content-fade-out');
-
-        await new Promise(resolve => setTimeout(resolve, 250)); 
+        contentWrapper.classList.add('content-fade-out');
+        await new Promise(resolve => setTimeout(resolve, 250));
+        content.scrollTop = 0;
 
         try {
             const response = await fetch(filePath);
-            if (!response.ok) {
+            if (!response.ok) throw new Error(`File not found: ${filePath}`);
 
-                window.location.href = '404.html';
-                return; 
-            }
             const markdown = await response.text();
 
-            content.classList.remove('content-fade-out');
-            content.innerHTML = marked.parse(markdown);
+            contentWrapper.classList.remove('content-fade-out');
+            contentWrapper.innerHTML = marked.parse(markdown); // Dies ersetzt den "Loading..." Text
+            contentWrapper.querySelectorAll('pre code').forEach(hljs.highlightElement);
 
-            content.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
-            });
-
-            content.classList.add('content-fade-in');
-
-            content.addEventListener('animationend', function handler() {
-                content.classList.remove('content-fade-in');
-                this.removeEventListener('animationend', handler); 
-            }, { once: true }); 
+            contentWrapper.classList.add('content-fade-in');
+            contentWrapper.addEventListener('animationend', () => {
+                contentWrapper.classList.remove('content-fade-in');
+            }, { once: true });
 
         } catch (error) {
             console.error('Error loading page:', error);
-
-            window.location.href = '404.html'; 
-
-            content.classList.remove('content-fade-out', 'content-fade-in');
+            contentWrapper.innerHTML = `<h1>Error</h1><p>Could not load content from <code>${filePath}</code>.</p>`;
+            contentWrapper.classList.remove('content-fade-out', 'content-fade-in');
         }
     };
 
-    const handleRouteChange = () => {
+    const handleRouteChange = async () => {
+        const hash = window.location.hash || `/${versionsConfig.latest}/${createSlug(docPages[0]?.title || 'introduction')}`;
+        const [_, version, slug] = hash.split('/');
+        const targetVersion = versionsConfig.versions.includes(version) ? version : versionsConfig.latest;
 
-        if (typeof DOC_PAGES === 'undefined' || !Array.isArray(DOC_PAGES) || DOC_PAGES.length === 0) {
-            console.error("DOC_PAGES not defined, not an array, or empty. Cannot route.");
-            content.innerHTML = '<p style="color: #ff6b6b;">Error: Navigation data missing or invalid.</p>';
-            return;
+        if (targetVersion !== currentVersion) {
+            currentVersion = targetVersion;
+            await fetchConfig(currentVersion);
+            createVersionSelector();
+            createSidebar();
         }
 
-        const hash = window.location.hash || `#/${createSlug(DOC_PAGES[0].title)}`;
-        const slug = hash.substring(2); 
-
-        const page = DOC_PAGES.find(p => createSlug(p.title) === slug);
+        const targetSlug = slug || createSlug(docPages[0]?.title || '');
+        const page = docPages.find(p => createSlug(p.title) === targetSlug);
 
         if (page) {
-            loadContent(page.file);
-
+            const filePath = `docs/${currentVersion}/${page.file}`;
+            loadContent(filePath);
             document.querySelectorAll('#sidebar a').forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.file === page.file) {
-                    link.classList.add('active');
-                }
+                link.classList.toggle('active', link.dataset.slug === targetSlug);
             });
         } else {
-
-            window.location.href = '404.html'; 
+            const firstPage = docPages[0];
+            if (firstPage) {
+                window.location.hash = `/${currentVersion}/${createSlug(firstPage.title)}`;
+            } else {
+                contentWrapper.innerHTML = '<h1>404 - Not Found</h1><p>The requested page does not exist in this version.</p>';
+            }
         }
     };
 
-    const init = () => {
+    const init = async () => {
+        await fetchVersions();
+        if (!versionsConfig.versions || versionsConfig.versions.length === 0) return;
+
+        const initialVersion = window.location.hash.split('/')[1] || versionsConfig.latest;
+        currentVersion = versionsConfig.versions.includes(initialVersion) ? initialVersion : versionsConfig.latest;
+
+        await fetchConfig(currentVersion);
+        createVersionSelector();
         createSidebar();
-        handleRouteChange(); 
-        window.addEventListener('hashchange', handleRouteChange); 
+        handleRouteChange();
+
+        window.addEventListener('hashchange', handleRouteChange);
     };
 
     init();
