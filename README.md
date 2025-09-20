@@ -36,4 +36,4 @@ This is a clean, responsive, and easy-to-use template for creating a static docu
     -   Add your `.md` content files (like `01-introduction.md`) in the same folder.
 
 3.  **Deploy**:
-    -   That's it! Upload the entire project folder to any static web host.
+    -   That's it. Upload the entire project folder to any static web host.
