@@ -1,7 +1,6 @@
 {
-  "latest": "0.0.2",
+  "latest": "0.3.2-SNAPSHOT",
   "versions": [
-    "0.0.2",
-    "0.0.1"
+    "0.3.2-SNAPSHOT"
   ]
 }
