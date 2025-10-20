@@ -1,14 +1,18 @@
 # Velthoric: Vehicles and Mounting
 
-Velthoric includes a comprehensive system for creating vehicles that players can mount, drive, and interact with. This is built on top of Jolt's powerful `VehicleConstraint` and a custom mounting system.
+Velthoric includes a comprehensive system for creating vehicles that players can mount, drive, and interact with. This is built on top of Jolt's powerful `VehicleConstraint` and a custom mounting system. The system handles complex physics on the server and ensures smooth, interpolated rendering on the client for a seamless player experience.
 
-This guide covers both the creation of the vehicle itself and the process of making it rideable.
+This guide covers the creation of the vehicle's physics, making it rideable, and understanding the crucial server-to-client state synchronization loop.
 
 ---
 
 ## The `VxVehicle` Base Class
 
-The foundation for all vehicles is the `VxVehicle` abstract class. It's a specialized `VxRigidBody` that automatically manages a `VehicleConstraint` and handles the synchronization of wheel and speed data to the client.
+The foundation for all vehicles is the `VxVehicle` abstract class. It's a specialized `VxRigidBody` that automatically manages a `VehicleConstraint`. Its key responsibilities are:
+
+*   **Server-Side:** Running the physics simulation for the vehicle and its wheels.
+*   **State Synchronization:** Tracking changes in vehicle state (speed, wheel rotation/steering/suspension) and synchronizing this data to clients.
+*   **Client-Side:** Receiving state data and interpolating it over time to produce smooth visuals for wheels and movement, even with low server tick rates.
 
 To create a new vehicle, you should extend one of its more specific subclasses:
 *   `VxCar`: A base for four-wheeled, car-like vehicles.
@@ -18,9 +22,10 @@ To create a new vehicle, you should extend one of its more specific subclasses:
 
 When creating a vehicle, you need to implement a few key methods:
 
-1.  **`createConstraintSettings()`**: This is the most important method. Here, you define every physical aspect of your vehicle: wheel positions, suspension, engine power, transmission gears, etc.
-2.  **`createJoltBody()`**: Defines the shape of the vehicle's main chassis (the rigid body).
-3.  **`defineSeats()`**: To make the vehicle rideable, you must define its seats by implementing the `VxMountable` interface.
+1.  **`createConstraintSettings()`**: This is the most important method. Here, you define every physical aspect of your vehicle: wheel positions, suspension, engine power, transmission gears, anti-roll bars, etc.
+2.  **`createCollisionTester()`**: Defines how the wheels detect the ground. Usually, a `VehicleCollisionTesterCastCylinder` is sufficient.
+3.  **`createJoltBody()`**: Defines the shape of the vehicle's main chassis (the rigid body), its mass, and other core physics properties.
+4.  **`defineSeats()`**: To make the vehicle rideable, you must define its seats by implementing the `VxMountable` interface (which `VxVehicle` already does).
 
 ## Example: Creating a Simple Car
 
@@ -28,10 +33,10 @@ Let's look at the structure of `CarImpl`, Velthoric's built-in car, to understan
 
 ### 1. The Class Definition
 
-Your class should extend `VxCar` (or `VxMotorcycle`) and implement `VxMountable`.
+Your class should extend `VxCar` (or `VxMotorcycle`). Since `VxVehicle` already implements `VxMountable`, you don't need to add it again.
 
 ```java
-public class MyCar extends VxCar implements VxMountable {
+public class MyCar extends VxCar {
     
     // Server-side constructor
     public MyCar(VxBodyType<MyCar> type, VxPhysicsWorld world, UUID id) {
@@ -50,12 +55,12 @@ public class MyCar extends VxCar implements VxMountable {
 
 ### 2. Configuring the Vehicle (`createConstraintSettings`)
 
-This is where the magic happens. You'll create and configure `WheelSettingsWv` for each wheel and a `WheeledVehicleControllerSettings` for the engine and drivetrain.
+This is where you define the vehicle's behavior. You'll create `WheelSettingsWv` for each wheel and a controller settings object (e.g., `WheeledVehicleControllerSettings`) for the engine and drivetrain.
 
 ```java
 @Override
 protected VehicleConstraintSettings createConstraintSettings() {
-    // This is where you define your car's physical setup.
+    // This list will hold wrappers for our wheel settings.
     this.wheels = new ArrayList<>(4);
     
     // --- 1. Create WheelSettingsWv for each wheel ---
@@ -91,12 +96,13 @@ protected VehicleConstraintSettings createConstraintSettings() {
     settings.addWheels(flWheel, frWheel, rlWheel, rrWheel);
     settings.setController(controllerSettings);
     
-    // --- 4. Sync wheel settings to the client for rendering ---
-    // Velthoric needs this list to render the wheels correctly.
+    // --- 4. Store and sync wheel settings ---
+    // The VxWheel wrapper holds both static settings and dynamic server-side state.
     this.wheels.add(new VxWheel(flWheel));
     this.wheels.add(new VxWheel(frWheel));
     this.wheels.add(new VxWheel(rlWheel));
     this.wheels.add(new VxWheel(rrWheel));
+    // This syncs the static wheel settings to the client, required for rendering.
     this.setSyncData(DATA_WHEELS_SETTINGS, this.wheels.stream().map(VxWheel::getSettings).collect(Collectors.toList()));
 
     return settings;
@@ -142,22 +148,77 @@ public void defineSeats(VxSeat.Builder builder) {
 
 Once seats are defined, Velthoric's mounting system automatically handles player interaction. When a player right-clicks within the `AABB` of a seat, a request is sent to the server to mount it.
 
-### 3. Handling Driver Input
+## Driver Input and State Synchronization
 
-If a seat is marked as `isDriverSeat`, the `handleDriverInput` method on your vehicle class will be called on the server whenever the player's input changes.
+A key feature of the vehicle system is how it smoothly translates player input into movement and synchronizes the result to all clients.
 
-The `VxCar` and `VxMotorcycle` base classes already provide a default implementation of this method that translates player input into throttle, brake, and steering for the vehicle controller. You can override it for more custom behavior.
+### 1. Handling Driver Input (`handleDriverInput`)
+
+If a seat is marked as `isDriverSeat`, the `handleDriverInput` method on your vehicle class is called on the server whenever the player's input changes.
+
+**Crucially, this method should not apply inputs directly.** Instead, it sets the *target state*. The actual physics values are interpolated over time in `physicsTick` for smooth control. `VxCar` and `VxMotorcycle` use a `VxSteering` helper for this.
 
 ```java
-// Default implementation in VxCar
+// Correct implementation pattern in VxCar.java
+
+// This field stores the last input from the player.
+private VxMountInput currentInput = VxMountInput.NEUTRAL;
+// This helper smoothly interpolates the steering angle.
+private final VxSteering steering = new VxSteering(4.0f);
+
 @Override
 public void handleDriverInput(ServerPlayer player, VxMountInput input) {
-    if (this.controller == null) return;
+    // Store the latest input state.
+    this.currentInput = input;
 
-    float forward = input.isForward() ? 1.0f : (input.isBackward() ? -1.0f : 0.0f);
-    float right = input.isRight() ? 1.0f : (input.isLeft() ? -1.0f : 0.0f);
-    // ... and so on
-
-    this.controller.setInput(forward, right, brake, handBrake);
+    // Set the TARGET steering angle. The steering will turn towards this over time.
+    float targetRight = 0.0f;
+    if (input.isRight()) {
+        targetRight = 1.0f;
+    } else if (input.isLeft()) {
+        targetRight = -1.0f;
+    }
+    this.steering.setTargetAngle(targetRight);
 }
 ```
+
+### 2. Applying Input in the Physics Tick (`physicsTick`)
+
+The `physicsTick` method is called every server tick. Here, we update the steering interpolation and apply the final, smoothed inputs to the vehicle's physics controller.
+
+```java
+// Logic inside VxCar#physicsTick
+
+// Update the steering helper, moving the current angle towards the target.
+final float tickDelta = 1.0f / 20.0f; // Assuming 20 TPS
+this.steering.update(tickDelta);
+
+// Complex logic can be used, e.g., braking before reversing.
+float forwardInput = 0.0f;
+float brakeInput = 0.0f;
+if (this.currentInput.isForward()) {
+    forwardInput = 1.0f;
+} else if (this.currentInput.isBackward()) {
+    if (getSpeedKmh() > 1.0f) {
+        brakeInput = 1.0f; // Brake if moving forward
+    } else {
+        forwardInput = -1.0f; // Reverse if stationary
+    }
+}
+// ... and so on
+
+// Apply the final, interpolated steering and other inputs to the controller.
+this.controller.setInput(forwardInput, this.steering.getCurrentAngle(), brakeInput, handBrakeInput);
+```
+
+### 3. State Synchronization and Client-Side Interpolation
+
+For other players to see the vehicle move correctly, its state must be sent from the server to clients.
+
+1.  **Dirty State:** When a vehicle is physically active, the server calls `markVehicleStateDirty()`.
+2.  **Dispatcher:** On a network thread, `VxVehicleNetworkDispatcher` gathers all "dirty" vehicles.
+3.  **Packet:** It creates an `S2CVehicleStatePacket` containing the vehicle's current speed and the precise rotation, steering, and suspension length for each wheel.
+4.  **Client Update:** Clients receive this packet. They do not snap the wheels to the new state instantly. Instead, they store it as a "target state."
+5.  **Rendering:** In `calculateRenderState`, which is called every frame, the client smoothly interpolates the wheel's visual state from its previous state towards the target state.
+
+This entire process ensures that even if the server sends updates only 20 times per second, players see perfectly smooth wheel rotation and suspension movement on their high-refresh-rate monitors.
