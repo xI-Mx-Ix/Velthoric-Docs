@@ -102,13 +102,19 @@
     color: var(--primary-color);
 }
 
-/* Mobile Menu Toggle */
+/* Mobile Menu Toggle - Hidden by default */
 .menu-toggle {
     display: none;
     background: none;
     border: none;
     color: var(--text-color);
     cursor: pointer;
+    padding: 0.5rem;
+}
+
+.menu-toggle i {
+    width: 24px;
+    height: 24px;
 }
 
 /* Copy Code Button */

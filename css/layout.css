@@ -3,12 +3,17 @@
 /*
  * Main layout structure styling.
  */
+body {
+    display: flex;
+    flex-direction: row;
+}
+
 .main-view {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     height: 100vh;
-    transition: transform 0.3s ease-in-out;
+    width: 100%;
 }
 
 header {
@@ -33,7 +38,6 @@ header {
     height: 100vh;
     overflow-y: auto;
     border-right: 1px solid var(--border-color);
-    transition: transform 0.3s ease-in-out;
 }
 
 #content {
@@ -51,18 +55,68 @@ header {
  * Responsive layout adjustments.
  */
 @media (max-width: 768px) {
-    body { flex-direction: column; }
+    body {
+        overflow-x: hidden;
+    }
+
     #sidebar {
         position: fixed;
-        left: -280px;
+        left: 0;
         top: 0;
-        height: 100%;
+        height: 100vh;
+        width: 280px;
         z-index: 2000;
+        transform: translateX(-280px);
         transition: transform 0.3s ease-in-out;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        box-shadow: none;
     }
-    body.sidebar-is-open #sidebar { transform: translateX(280px); }
-    .menu-toggle { display: block; }
-    #content { padding: 1.5rem; }
-    .main-view { width: 100%; }
+
+    body.sidebar-is-open #sidebar {
+        transform: translateX(0);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+    }
+
+    /* Overlay */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1500;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        pointer-events: none;
+    }
+
+    body.sidebar-is-open::after {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .main-view {
+        width: 100vw;
+        margin-left: 0;
+    }
+
+    .menu-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #content {
+        padding: 1.5rem;
+    }
+}
+
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+    .menu-toggle {
+        display: none !important;
+    }
 }

@@ -9,6 +9,13 @@ export const toggleSidebar = () => {
 };
 
 /**
+ * Closes the sidebar (for mobile).
+ */
+export const closeSidebar = () => {
+    document.body.classList.remove('sidebar-is-open');
+};
+
+/**
  * Creates and populates the version selector dropdown.
  */
 export const createVersionSelector = () => {
@@ -65,6 +72,10 @@ export const createSidebar = () => {
         link.href = `#/${state.currentVersion}/${slug}`;
         link.textContent = page.title;
         link.dataset.slug = slug;
+
+        // Close sidebar on mobile when clicking a link
+        link.addEventListener('click', closeSidebar);
+
         listItem.appendChild(link);
         navList.appendChild(listItem);
     });
