@@ -1,0 +1,57 @@
+/*
+ * Styling for markdown-generated content.
+ */
+#content h1, #content h2, #content h3 {
+    color: var(--primary-color);
+    margin: 2rem 0 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+#content p { margin-bottom: 1rem; }
+#content a { color: var(--primary-color); text-decoration: none; }
+#content a:hover { text-decoration: underline; }
+
+/* Inline and block code styling */
+#content code {
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+}
+
+#content pre {
+    position: relative;
+    background-color: #0d1117;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+
+#content pre code {
+    background: none;
+    padding: 0;
+}
+
+/*
+ * Keyframe animations for content transitions.
+ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(10px); }
+}
+
+.content-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.content-fade-out {
+    animation: fadeOut 0.3s ease-in forwards;
+}

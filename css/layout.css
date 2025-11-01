@@ -1,0 +1,66 @@
+/*
+ * Main layout structure styling.
+ */
+.main-view {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    transition: transform 0.3s ease-in-out;
+}
+
+header {
+    background-color: var(--surface-color);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background-color: var(--surface-color);
+    padding: 1.5rem;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.3s ease-in-out;
+}
+
+#content {
+    flex-grow: 1;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+}
+
+.content-wrapper {
+    max-width: 1100px;
+    margin: 0;
+}
+
+/*
+ * Responsive layout adjustments.
+ */
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100%;
+        z-index: 2000;
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+    }
+    body.sidebar-is-open #sidebar { transform: translateX(280px); }
+    .menu-toggle { display: block; }
+    #content { padding: 1.5rem; }
+    .main-view { width: 100%; }
+}
