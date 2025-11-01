@@ -9,6 +9,7 @@
     --text-color: #F9FAFB;
     --text-muted-color: #9CA3AF;
     --border-color: #374151;
+    --success-color: #34D399; /* Green for "copied" state */
     --font-sans: 'Inter', sans-serif;
     --font-mono: 'Roboto Mono', monospace;
 }
@@ -126,19 +127,13 @@ header {
     overflow-y: auto;
 }
 
-/*
- * The content wrapper now has a generous max-width to prevent
- * text lines from becoming too long on wide screens, improving readability.
- * It is centered within the available space.
- */
 .content-wrapper {
     max-width: 1100px;
-    margin: 0 auto;
+    margin: 0;
 }
 
-
 /*
- * Version selector dropdown styling with animations.
+ * Version selector dropdown styling.
  */
 #version-selector-container {
     position: relative;
@@ -176,8 +171,6 @@ header {
     border: 1px solid var(--border-color);
     border-radius: 6px;
     z-index: 100;
-    max-height: 300px;
-    overflow-y: auto;
     transform-origin: top;
     transform: scaleY(0.95);
     opacity: 0;
@@ -222,30 +215,15 @@ header {
  * Keyframe animations for content transitions.
  */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeOut {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(10px);
-    }
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(10px); }
 }
 
-/*
- * Animation classes to be applied by JavaScript.
- */
 .content-fade-in {
     animation: fadeIn 0.3s ease-out forwards;
 }
@@ -255,13 +233,10 @@ header {
 }
 
 /*
- * Responsive design for smaller screens.
+ * Responsive design.
  */
 @media (max-width: 768px) {
-    body {
-        flex-direction: column;
-    }
-
+    body { flex-direction: column; }
     #sidebar {
         position: fixed;
         left: -280px;
@@ -271,22 +246,10 @@ header {
         transition: transform 0.3s ease-in-out;
         box-shadow: 5px 0 15px rgba(0,0,0,0.2);
     }
-
-    body.sidebar-is-open #sidebar {
-        transform: translateX(280px);
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    #content {
-        padding: 1.5rem;
-    }
-
-    .main-view {
-        width: 100%;
-    }
+    body.sidebar-is-open #sidebar { transform: translateX(280px); }
+    .menu-toggle { display: block; }
+    #content { padding: 1.5rem; }
+    .main-view { width: 100%; }
 }
 
 /*
@@ -299,19 +262,9 @@ header {
     padding-bottom: 0.5rem;
 }
 
-#content p {
-    margin-bottom: 1rem;
-}
-
-#content a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-#content a:hover {
-    text-decoration: underline;
-}
-
+#content p { margin-bottom: 1rem; }
+#content a { color: var(--primary-color); text-decoration: none; }
+#content a:hover { text-decoration: underline; }
 #content code {
     background-color: var(--surface-color);
     color: var(--primary-color);
@@ -320,7 +273,11 @@ header {
     font-family: var(--font-mono);
 }
 
+/*
+ * Code block styling with positioning for the copy button.
+ */
 #content pre {
+    position: relative; /* Required for absolute positioning of the button */
     background-color: #0d1117;
     padding: 1.5rem;
     border-radius: 8px;
@@ -331,4 +288,39 @@ header {
 #content pre code {
     background: none;
     padding: 0;
+}
+
+/*
+ * Copy button styling.
+ */
+.copy-code-btn {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted-color);
+    padding: 0.4rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.copy-code-btn:hover {
+    opacity: 1;
+    color: var(--text-color);
+}
+
+.copy-code-btn.copied {
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.copy-code-btn i {
+    width: 16px;
+    height: 16px;
 }

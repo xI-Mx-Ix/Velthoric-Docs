@@ -84,10 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         versionSelectorContainer.innerHTML = '';
-        versionSelectorContainer.appendChild(optionsContainer); // Options first for sibling selector
+        versionSelectorContainer.appendChild(optionsContainer);
         versionSelectorContainer.appendChild(selected);
 
-        lucide.createIcons(); // Render the chevron icon
+        lucide.createIcons();
 
         selected.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -124,13 +124,42 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
+     * Adds a "Copy" button to each code block.
+     */
+    const addCopyButtonsToCodeBlocks = () => {
+        const codeBlocks = contentWrapper.querySelectorAll('pre');
+        codeBlocks.forEach(block => {
+            const button = document.createElement('button');
+            button.className = 'copy-code-btn';
+            button.setAttribute('aria-label', 'Copy code to clipboard');
+            button.innerHTML = '<i data-lucide="copy"></i>';
+
+            block.appendChild(button);
+
+            button.addEventListener('click', () => {
+                const code = block.querySelector('code').innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    button.innerHTML = '<i data-lucide="check"></i>';
+                    button.classList.add('copied');
+                    lucide.createIcons(); // Render the new 'check' icon
+
+                    setTimeout(() => {
+                        button.innerHTML = '<i data-lucide="copy"></i>';
+                        button.classList.remove('copied');
+                        lucide.createIcons(); // Render the 'copy' icon again
+                    }, 2000);
+                });
+            });
+        });
+        lucide.createIcons();
+    };
+
+    /**
      * Loads and displays the content of a markdown file with animations.
      * @param {string} filePath - The path to the markdown file.
      */
     const loadContent = async (filePath) => {
         contentWrapper.classList.add('content-fade-out');
-
-        // Wait for fade-out animation to complete
         await new Promise(resolve => setTimeout(resolve, 300));
 
         try {
@@ -141,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             contentWrapper.classList.remove('content-fade-out');
             contentWrapper.innerHTML = marked.parse(markdown);
             contentWrapper.querySelectorAll('pre code').forEach(hljs.highlightElement);
+            addCopyButtonsToCodeBlocks();
 
             contentWrapper.classList.add('content-fade-in');
             contentWrapper.addEventListener('animationend', () => {
