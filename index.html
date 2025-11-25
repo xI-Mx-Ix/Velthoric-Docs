@@ -3,61 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Velthoric API - Documentation</title>
+    <title>Velthoric API | Documentation</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Main CSS File (imports all other stylesheets) -->
-    <link rel="stylesheet" href="css/main.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Highlight.js for syntax highlighting -->
+    <!-- Highlight.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 
-    <!-- Favicon -->
+    <!-- Custom Styles (Markdown overrides & Dynamic elements) -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
     <link rel="icon" type="image/png" href="assets/velthoric_icon.png" />
 </head>
-<body>
+<!--
+    Updated: Changed 'min-h-screen' to 'h-screen' to force the body to fixed height.
+    This is required for the internal 'overflow-y-auto' on the content div to work correctly.
+-->
+<body class="bg-slate-950 text-slate-200 font-sans h-screen flex overflow-hidden">
 
-<!-- Sidebar for navigation -->
-<aside id="sidebar">
-    <div class="sidebar-header">
-        <h2 class="logo">Velthoric API</h2>
+<!--
+  Sidebar
+  Fixed width, dark slate theme
+-->
+<aside id="sidebar" class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col h-full transition-transform duration-300 absolute md:relative z-50 -translate-x-full md:translate-x-0 shrink-0">
+
+    <!-- Sidebar Header -->
+    <div class="p-6 flex items-center gap-3 border-b border-slate-800/50">
+        <div class="w-8 h-8 rounded bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 shrink-0">
+            <i class="fas fa-book text-sm"></i>
+        </div>
+        <h1 class="font-bold text-lg tracking-tight text-white">Velthoric API</h1>
     </div>
-    <nav id="sidebar-nav">
-        <p>Loading navigation...</p>
+
+    <!-- Version Selector Container (Injected via JS) -->
+    <div class="px-6 pt-6 pb-2">
+        <div class="text-xs uppercase text-slate-500 font-bold mb-2">Version</div>
+        <div id="version-selector-container" class="relative">
+            <!-- JS will populate this -->
+        </div>
+    </div>
+
+    <!-- Navigation Links (Injected via JS) -->
+    <nav id="sidebar-nav" class="flex-1 overflow-y-auto p-6 space-y-1">
+        <!-- Loading state placeholder -->
+        <div class="animate-pulse flex space-x-4">
+            <div class="flex-1 space-y-4 py-1">
+                <div class="h-4 bg-slate-800 rounded w-3/4"></div>
+                <div class="h-4 bg-slate-800 rounded"></div>
+                <div class="h-4 bg-slate-800 rounded w-5/6"></div>
+            </div>
+        </div>
     </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-slate-800 bg-slate-900/50 text-xs text-slate-500 text-center">
+        &copy; 2025 xI-Mx-Ix
+    </div>
 </aside>
 
-<!-- Main content area -->
-<div class="main-view">
-    <header>
-        <div class="header-content">
-            <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">
-                <i data-lucide="menu"></i>
-            </button>
-            <div id="version-selector-container">
-                <!-- Version selector will be injected here by JavaScript -->
+<!-- Mobile Overlay -->
+<div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+<!--
+  Main Content Area
+-->
+<main class="flex-1 flex flex-col min-w-0 relative bg-slate-950 h-full">
+
+    <!-- Top Header -->
+    <header class="h-16 border-b border-slate-800 bg-slate-950/80 backdrop-blur flex items-center justify-between px-6 sticky top-0 z-30 shrink-0">
+
+        <!-- Mobile Toggle -->
+        <button onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-white transition">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+
+        <!-- Breadcrumb / Title Context -->
+        <div class="hidden md:flex items-center gap-2 text-sm text-slate-400">
+            <span class="text-cyan-400"><i class="fas fa-home"></i></span>
+            <i class="fas fa-chevron-right text-[10px] text-slate-600"></i>
+            <span>Documentation</span>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center gap-4">
+            <!-- Updated: Added correct URL and target="_blank" -->
+            <a href="https://github.com/xI-Mx-Ix/Velthoric" target="_blank" class="text-slate-400 hover:text-cyan-400 transition text-sm flex items-center gap-2">
+                <i class="fab fa-github"></i> <span class="hidden sm:inline">Repository</span>
+            </a>
+            <div class="h-4 w-px bg-slate-800"></div>
+            <div class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                Public API
             </div>
         </div>
     </header>
 
-    <main id="content">
-        <div class="content-wrapper">
-            <p>Loading content...</p>
-        </div>
-    </main>
-</div>
+    <!--
+        Content Wrapper
+        - 'overflow-y-auto': Handles the scrolling for the content area.
+        - 'flex-1': Takes up remaining height.
+    -->
+    <div id="content-scroll" class="flex-1 overflow-y-auto p-6 md:p-10 scroll-smooth">
+        <!--
+            Updated: Changed max-width to 'max-w-7xl' to provide more breathing room
+            for code blocks and prevent the "squashed" look.
+        -->
+        <div class="max-w-7xl mx-auto">
 
-<!-- External JavaScript libraries -->
+            <!-- Content Container (Injected via JS/Markdown) -->
+            <article id="content" class="min-h-[50vh]">
+                <div class="flex flex-col items-center justify-center h-64 text-slate-500">
+                    <i class="fas fa-circle-notch fa-spin text-2xl mb-4 text-cyan-500"></i>
+                    <p>Loading documentation...</p>
+                </div>
+            </article>
+
+        </div>
+    </div>
+
+</main>
+
+<!-- External Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
 
-<!-- Main JavaScript application entry point (as a module) -->
+<!-- Main Logic -->
 <script type="module" src="js/main.js"></script>
 
+<!-- UI Helpers (Sidebar Toggle) -->
+<script>
+    function toggleMobileMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+
+        // Note: The JS module (ui.js) also handles this,
+        // but this inline script ensures basic functionality before modules load.
+        if (sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+    }
+</script>
 </body>
 </html>
