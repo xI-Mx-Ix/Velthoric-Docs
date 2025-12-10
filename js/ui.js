@@ -171,7 +171,7 @@ const addCopyButtonsToCodeBlocks = () => {
 
 /**
  * Loads and displays the content of a markdown file.
- * Handles fade transitions and syntax highlighting.
+ * Handles fade transitions, scroll resetting, and syntax highlighting.
  * @param {string} filePath - The path to the markdown file.
  */
 export const loadContent = async (filePath) => {
@@ -188,6 +188,11 @@ export const loadContent = async (filePath) => {
 
         // Parse Markdown
         DOM.contentWrapper.innerHTML = marked.parse(markdown);
+
+        // Reset the scroll position of the main content area to the top
+        if (DOM.contentScroll) {
+            DOM.contentScroll.scrollTop = 0;
+        }
 
         // Apply Syntax Highlighting
         DOM.contentWrapper.querySelectorAll('pre code').forEach(hljs.highlightElement);

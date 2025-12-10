@@ -1,6 +1,6 @@
 /**
  * Centralized DOM element references.
- * Matches the IDs defined in the new Tailwind HTML structure.
+ * Matches the IDs defined in the Tailwind HTML structure.
  */
 export const DOM = {
     // The sidebar navigation container
@@ -8,6 +8,9 @@ export const DOM = {
 
     // The main content area where Markdown is injected (<article id="content">)
     contentWrapper: document.getElementById('content'),
+
+    // The scrollable container wrapping the main content area
+    contentScroll: document.getElementById('content-scroll'),
 
     // The container for the version dropdown
     versionSelectorContainer: document.getElementById('version-selector-container'),
