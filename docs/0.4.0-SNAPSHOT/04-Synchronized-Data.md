@@ -1,147 +1,162 @@
-# Velthoric: Synchronized Data
+# Velthoric Synchronized Data
 
-While Velthoric automatically synchronizes the essential physics state of a body (position, rotation, velocity), you often need to sync custom data to the client. This could be anything from a vehicle's current gear, the color of a box, to the remaining health of a destructible object.
+While Velthoric automatically synchronizes the essential physics state of a body, such as position, rotation, and velocity, you often need to share custom data between the server and clients. This could be a vehicle's current gear, the team color of an object, or a visual effect triggered by a player.
 
-Velthoric provides a flexible and efficient system for this, inspired by Minecraft's own `SynchedEntityData`.
+Velthoric provides a robust system for this which now supports **Authority Management**. This means you explicitly define who owns the data, the Server or the Client.
 
-This guide assumes you have read `The Basics`.
+## The Concept of Authority
 
----
+The biggest feature of the new system is the separation of authority. You must decide who controls a specific piece of data.
 
-## The Core Components
+**Server Authority via VxServerAccessor**
+Only the Server can change this data. Updates flow from the Server to the Client. This is used for game state, health, team colors, or inventory contents. If a client tries to change this, the system will block it and log a warning.
 
-The synchronized data system has three main parts:
-
-1.  **`VxDataAccessor<T>`**: A static, type-safe key for a piece of data. Think of it as a unique ID for a variable you want to sync. It is tied to a specific data type `<T>`.
-
-2.  **`VxDataSerializers`**: A registry of serializers. Each serializer knows how to write a specific data type (like `Integer` or `Vec3`) to the network buffer and read it back. Velthoric provides serializers for many common types.
-
-3.  **`VxSynchronizedData`**: A container object held by every `VxBody`. It stores the actual values for all the data accessors defined for that body.
+**Client Authority via VxClientAccessor**
+The Client, or the player, changes this data. Updates flow from the Client to the Server, and the Server then replicates it to other Clients. This is used for user inputs, cosmetic toggles, or strictly client-side visual states that need to be seen by others.
 
 ## Step-by-Step Implementation
 
-Let's add a custom color to our `CrateRigidBody` from the basics guide.
+Let's upgrade our `CrateRigidBody`. We want to add a color that the Server decides and a "glowing" effect that the Client decides.
 
-### Step 1: Define the `VxDataAccessor`
+### Step 1 Define the Accessors
 
-First, you must define a `VxDataAccessor` as a `public static final` field in your `VxBody` class. This is the key you will use to get and set the data.
-
-The `create` method requires the body's class to ensure unique and deterministic IDs across the server and client.
+Define your accessors as `public static final` fields in your body class. You use specific factory methods to create them based on the authority you need.
 
 ```java
-// Inside your CrateRigidBody.java
-
 public class CrateRigidBody extends VxRigidBody {
 
-    // An enum for our colors. Using an enum is good practice.
     public enum CrateColor {
         BROWN, GRAY, DARK_OAK
     }
 
-    // Define the accessor. We will sync an Integer representing the enum's ordinal.
-    public static final VxDataAccessor<Integer> DATA_COLOR_ORDINAL = VxDataAccessor.create(
-        CrateRigidBody.class,       // The class this data belongs to
-        VxDataSerializers.INTEGER   // The serializer for the data type
+    // Server Authority: Only the server sets the color.
+    // We sync the Enum ordinal as an Integer.
+    public static final VxServerAccessor<Integer> DATA_COLOR = VxServerAccessor.create(
+        CrateRigidBody.class,       // The body class
+        VxDataSerializers.INTEGER   // The data serializer
     );
-    
-    // ... constructors and other methods ...
+
+    // Client Authority: The client can toggle this glow effect.
+    public static final VxClientAccessor<Boolean> DATA_GLOWING = VxClientAccessor.create(
+        CrateRigidBody.class,
+        VxDataSerializers.BOOLEAN
+    );
+
+    // ... constructors ...
 }
 ```
 
-### Step 2: Register the Accessor with a Default Value
+### Step 2 Register with Default Values
 
-Next, you must tell Velthoric about your new data accessor by defining it in the `defineSyncData` method. This is where you provide its default value. This method is called in the `VxBody` constructor.
+In your `defineSyncData` method, register both accessors. This sets the initial state for the body when it spawns.
 
 ```java
-// Inside CrateRigidBody.java
-
 @Override
 protected void defineSyncData(VxSynchronizedData.Builder builder) {
-    // Register our accessor with a default value of BROWN.
-    builder.define(DATA_COLOR_ORDINAL, CrateColor.BROWN.ordinal());
+    // Define initial values
+    builder.define(DATA_COLOR, CrateColor.BROWN.ordinal());
+    builder.define(DATA_GLOWING, false);
 }
 ```
 
-### Step 3: Create Getters and Setters
+### Step 3 Getters and Setters
 
-To make working with the data easier and safer, create simple getter and setter methods.
-
-The crucial part is the setter: on the server, you **must** use `this.setSyncData()`. This method not only updates the value but also marks it as "dirty," which tells the network dispatcher to send an update to clients.
+This is where the new API enforces safety. You use `setServerData` for server-authoritative keys and `setClientData` for client-authoritative keys. Note that reading data works the same way on both sides using `get()`.
 
 ```java
-// Inside CrateRigidBody.java
+// --- Color Logic (Server Authoritative)
 
 /**
- * Sets the color of the crate. Server-side only.
- * This will automatically sync the new color to all tracking clients.
+ * Sets the crate color. 
+ * Throws an exception if called on the Client.
  */
 public void setColor(CrateColor color) {
-    // Use the inherited setSyncData method to update the value.
-    this.setSyncData(DATA_COLOR_ORDINAL, color.ordinal());
+    this.setServerData(DATA_COLOR, color.ordinal());
 }
 
-/**
- * Gets the current color of the crate. Can be called on both server and client.
- */
 public CrateColor getColor() {
-    // Use the inherited getSyncData method to retrieve the value.
-    int ordinal = this.getSyncData(DATA_COLOR_ORDINAL);
-    
-    // It's good practice to add bounds checking for safety.
+    int ordinal = this.get(DATA_COLOR);
+    // Safety check for array bounds is always good practice
     if (ordinal >= 0 && ordinal < CrateColor.values().length) {
         return CrateColor.values()[ordinal];
     }
-    return CrateColor.BROWN; // Fallback to default
+    return CrateColor.BROWN;
+}
+
+// --- Glowing Logic (Client Authoritative)
+
+/**
+ * Toggles the glow.
+ * Throws an exception if called on the Server.
+ */
+public void setGlowing(boolean glowing) {
+    this.setClientData(DATA_GLOWING, glowing);
+}
+
+public boolean isGlowing() {
+    return this.get(DATA_GLOWING);
 }
 ```
 
----
+### Step 4 Reacting to Changes
 
-## Reacting to Changes on the Client
+When data changes, whether it arrived from the server or was sent by a client, you often want to trigger an event immediately. This could be playing a sound or spawning particles.
 
-When the server sends a data update, the client receives it and automatically updates the value in its local `VxSynchronizedData` container. But what if you want to *do* something when the data changes, like play a sound or spawn a particle?
+Override the appropriate overloaded `onSyncedDataUpdated` method to catch these updates:
 
-You can do this by overriding the `onSyncedDataUpdated()` method in your `VxBody` class. This method is a hook that fires on the client *after* a value has been updated.
+*   **`onSyncedDataUpdated(VxServerAccessor<?> accessor)`:** For Server-authoritative data updates.
+*   **`onSyncedDataUpdated(VxClientAccessor<?> accessor)`:** For Client-authoritative data updates.
 
 ```java
-// Inside CrateRigidBody.java
-
+// Example: Handling Server-Authoritative Data Changes
 @Override
-@Environment(EnvType.CLIENT) // This is a client-side only method
-public void onSyncedDataUpdated(VxDataAccessor<?> accessor) {
-    // Check if the accessor that was updated is the one we care about.
-    if (accessor.equals(DATA_COLOR_ORDINAL)) {
-        
-        // The color has changed! Let's play a sound effect.
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null) {
-            mc.getSoundManager().play(
-                SimpleSoundInstance.forUI(SoundEvents.BARREL_CLOSE, 1.0F)
-            );
+public void onSyncedDataUpdated(VxServerAccessor<?> accessor) {
+    // Handle Color Change (assuming DATA_COLOR is a VxServerAccessor)
+    if (accessor.equals(DATA_COLOR)) {
+        // Maybe play a paint sound?
+    }
+}
+
+// Example: Handling Client-Authoritative Data Changes
+@Override
+public void onSyncedDataUpdated(VxClientAccessor<?> accessor) {
+    // Handle Glow Change (assuming DATA_GLOWING is a VxClientAccessor)
+    if (accessor.equals(DATA_GLOWING)) {
+        if (isGlowing()) {
+             // Spawn some magical particles at the body's position
+             this.spawnGlowParticles();
         }
     }
 }
 ```
 
-## Persistence and Synchronized Data
+## Persistence and Saving to Disk
 
-**Important:** Synchronized data is for networking, **not** for saving to disk. It is not automatically persisted when a chunk is saved.
+It is important to remember that **Synchronized Data is for networking only**. It does not automatically save to the hard drive.
 
-If a piece of synchronized data is essential for recreating your body when it's loaded from the world save, you must manually save and load it in the persistence methods.
+If you restart the server, the `VxSynchronizedData` will reset to the defaults defined in `defineSyncData`. If you want the Color state to persist across restarts, you must manually write it in the persistence methods.
 
 ```java
-// Inside CrateRigidBody.java
-
 @Override
 public void writePersistenceData(VxByteBuf buf) {
-    // Manually write the color ordinal to the persistence buffer.
-    buf.writeVarInt(this.getSyncData(DATA_COLOR_ORDINAL));
+    // Save the current state to disk
+    buf.writeVarInt(this.get(DATA_COLOR));
 }
 
 @Override
 public void readPersistenceData(VxByteBuf buf) {
-    // Read the color ordinal and set it. This will NOT trigger a network sync,
-    // as the body is still being loaded and is not yet tracked by any clients.
-    this.setSyncData(DATA_COLOR_ORDINAL, buf.readVarInt());
+    // Load state from disk
+    int colorOrdinal = buf.readVarInt();
+    this.setServerData(DATA_COLOR, colorOrdinal);
 }
 ```
+
+### Available Serializers
+
+`VxDataSerializers` contains most types you will need.
+
+*   **Primitives** `BYTE`, `INTEGER`, `FLOAT`, `BOOLEAN`
+*   **Text** `STRING`
+*   **Identification** `UUID`
+*   **Math** `VEC3` (Jolt), `RVEC3` (Render), `QUAT`, `FLOAT3`, `COLOR`
+*   **Collections** `WHEEL_SETTINGS_LIST` (for vehicles)
