@@ -1,4 +1,4 @@
-# Velthoric: Raycasting and Interaction
+# Raycasting and Interaction
 
 Standard Minecraft raycasting, what happens when you look at or right-click on something, is limited to vanilla blocks and entities. It has no knowledge of the physics bodies simulated by Velthoric. To allow players to seamlessly interact with your custom physics objects, Velthoric provides a powerful, unified raycasting system.
 

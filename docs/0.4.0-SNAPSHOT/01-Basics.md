@@ -1,4 +1,4 @@
-# Velthoric: The Basics
+# The Basics
 
 Welcome to the documentation for Velthoric, a server-side physics modification for Minecraft built upon the powerful **Jolt Physics Engine**. This guide will walk you through the fundamental concepts you need to know to start creating your own physical objects in the world.
 

@@ -1,4 +1,4 @@
-# Velthoric: Vehicles and Mounting
+# Vehicles and Mounting
 
 Velthoric provides a high-level abstraction over Jolt's `VehicleConstraint` system, allowing you to create complex drivable vehicles like cars and motorcycles. The system handles the heavy lifting of physics simulation, input processing, network synchronization, and client-side interpolation.
 

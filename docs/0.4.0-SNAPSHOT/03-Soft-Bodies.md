@@ -1,4 +1,4 @@
-# Velthoric: Soft Bodies
+# Soft Bodies
 
 While rigid bodies have a fixed shape, **Soft Bodies** are dynamic and deformable. They are simulated as a collection of interconnected particles (or vertices), making them perfect for objects like cloth, ropes, and other flexible materials.
 

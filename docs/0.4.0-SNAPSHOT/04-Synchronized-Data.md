@@ -1,4 +1,4 @@
-# Velthoric Synchronized Data
+# Synchronized Data
 
 While Velthoric automatically synchronizes the essential physics state of a body, such as position, rotation, and velocity, you often need to share custom data between the server and clients. This could be a vehicle's current gear, the team color of an object, or a visual effect triggered by a player.
 

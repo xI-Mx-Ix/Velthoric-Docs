@@ -1,4 +1,4 @@
-# Velthoric: Constraints (Joints)
+# Constraints (Joints)
 
 Constraints (also known as joints) are an essential tool in physics simulation. They connect two bodies and restrict their relative motion. With constraints, you can build everything from simple chains and pendulums to complex mechanisms like doors, pistons, or vehicle suspensions.
 

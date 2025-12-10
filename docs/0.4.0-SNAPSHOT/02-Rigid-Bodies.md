@@ -1,4 +1,4 @@
-# Velthoric: Rigid Bodies
+# Rigid Bodies
 
 A **Rigid Body** is a fundamental object in a physics simulation. It represents a solid, non-deformable object that can be moved, rotated, and can collide with other objects. In Velthoric, you create rigid bodies by extending the `VxRigidBody` class.
 
