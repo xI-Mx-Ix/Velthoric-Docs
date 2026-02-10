@@ -42,7 +42,8 @@ Let's imagine we have two `BoxRigidBody` instances, `body1` and `body2`, and we 
 
 // Use PointConstraintSettings for a ball-and-socket joint.
 try (PointConstraintSettings settings = new PointConstraintSettings()) {
-    
+    settings.setSpace(EConstraintSpace.LocalToBodyCom);
+
     // Define the anchor points in the LOCAL space of the bodies.
     // We'll connect the center of body1's top face to the center of body2's bottom face.
     // Assuming our boxes are 1x1x1, their local center is at (0,0,0).
@@ -66,12 +67,12 @@ That's it! The `VxConstraintManager` handles the rest. It will wait until both `
 
 A crucial concept when configuring constraints is the `EConstraintSpace`. It defines the coordinate system in which the anchor points (`Point1` and `Point2`) are interpreted.
 
-### `EConstraintSpace.LocalToBodyCom` (Default)
+### `EConstraintSpace.LocalToBodyCom`
 
 *   **Meaning**: The anchor points are defined **relative to the center of mass (CoM) of their respective body**.
 *   **Usage**: This is the most common and recommended use case. It makes the constraint independent of the bodies' current position and rotation in the world. The crate example above uses this mode.
 
-### `EConstraintSpace.WorldSpace`
+### `EConstraintSpace.WorldSpace` (Default)
 
 *   **Meaning**: The anchor points are interpreted as **absolute world coordinates**.
 *   **Usage**: Useful when you want to "snap" two bodies together at a specific point in the world. Jolt will calculate the correct local offsets internally. This is especially important when attaching a body to the static world.
@@ -95,8 +96,7 @@ VxChainPartRigidBody chainLink = ...;
 RVec3 hangPoint = new RVec3(10, 70, 20); 
 
 try (PointConstraintSettings settings = new PointConstraintSettings()) {
-    // It's essential to set the space to WorldSpace!
-    settings.setSpace(EConstraintSpace.WorldSpace);
+    // It's essential to keep the space within the WorldSpace!
 
     // When using WorldSpace, both anchor points are the same world coordinate.
     // The first point is the anchor in the world, the second is the anchor on the body.
